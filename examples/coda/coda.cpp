@@ -28,6 +28,7 @@ int main(int argc, char* argv[]) {
 #endif
   PNGraph G;
   TIntStrH NIDNameH;
+  TStrHash<TInt> NodeNameH;  //fan
   if (IsUndirected == 1) {
     PUNGraph UG;
     if (InFNm.IsSuffix(".ungraph")) {
@@ -44,6 +45,7 @@ int main(int argc, char* argv[]) {
       G = TNGraph::Load(GFIn);
       
     } else {
+      G = TAGMUtil::LoadEdgeListStr<PNGraph>(InFNm, NodeNameH);  //fan
       G = TAGMUtil::LoadEdgeListStr<PNGraph>(InFNm, NIDNameH);
     }
   }
@@ -73,6 +75,8 @@ int main(int argc, char* argv[]) {
   CD.GetCmtyVV(EstCmtyVVOut, EstCmtyVVIn);
   TAGMUtil::DumpCmtyVV(OutFPrx + "cmtyvv.out.txt", EstCmtyVVOut, NIDNameH);
   TAGMUtil::DumpCmtyVV(OutFPrx + "cmtyvv.in.txt", EstCmtyVVIn, NIDNameH);
+
+  CD.DumpMemberships_all(OutFPrx + "memberships.txt",NodeNameH,0.0); //fan
 
   Catch
 
