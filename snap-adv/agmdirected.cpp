@@ -690,12 +690,12 @@ void TCoda::DumpMemberships_all(const TStr& OutFNm,TStrHash<TInt>& NodeNameH, co
 
     for (int c = 0; c < NumComs; c++) {
         int CID = CIDSumFH.GetKey(c);
-		for (int u = 0; u < NIDV.Len(); u++){
-		    fprintf(FId, "%f\t", GetCom(false, u, CID));
-		}
-		fprintf(FId, "\n");
+	for (int u = 0; u < NIDV.Len(); u++){
+		fprintf(FId, "%f\t", GetCom(false, u, CID));
 	}
-	fclose(FId);
+	fprintf(FId, "\n");
+    }
+    fclose(FId);
 }
 
 void TCoda::GetCmtyS(TIntSet& CmtySOut, TIntSet& CmtySIn, const int CID, const double Thres) {
