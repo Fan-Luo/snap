@@ -671,6 +671,33 @@ void TCoda::DumpMemberships(const TStr& OutFNm, const double Thres) {
   DumpMemberships(OutFNm, NodeNameH, Thres);
 }
 
+//fan: Dump Memberships, each row is a community, each column is a node's membership to corresponding community
+void TCoda::DumpMemberships_all(const TStr& OutFNm,TStrHash<TInt>& NodeNameH, const double Thres) {
+
+    FILE* FId = fopen(OutFNm.CStr(), "wt");
+    TIntFltH CIDSumFH(NumComs);
+
+    for (int c = 0; c < NumComs; c++) {
+        CIDSumFH.AddDat(c, GetSumVal(true, c) * GetSumVal(false, c));
+    }
+    CIDSumFH.SortByDat(false);
+
+    for (int u = 0; u < NIDV.Len(); u++){
+        int NIdx = NIDV[u];
+        fprintf(FId, "%s\t", NodeNameH.GetKey(NIdx));
+    }
+    fprintf(FId, "\n");
+
+    for (int c = 0; c < NumComs; c++) {
+        int CID = CIDSumFH.GetKey(c);
+		for (int u = 0; u < NIDV.Len(); u++){
+		    fprintf(FId, "%f\t", GetCom(false, u, CID));
+		}
+		fprintf(FId, "\n");
+	}
+	fclose(FId);
+}
+
 void TCoda::GetCmtyS(TIntSet& CmtySOut, TIntSet& CmtySIn, const int CID, const double Thres) {
   CmtySOut.Gen(G->GetNodes() / 10);
   CmtySIn.Gen(G->GetNodes() / 10);
