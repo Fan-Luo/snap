@@ -46,7 +46,7 @@ public:
   void DumpMemberships(const TStr& OutFNm, const TStrHash<TInt>& NodeNameH, const double Thres);
   void GetCmtyS(TIntSet& CmtySOut, TIntSet& CmtySIn, const int CID, const double Thres);
   void DumpMemberships(const TStr& OutFNm, const double Thres);
-  void DumpMemberships_all(const TStr& OutFNm,TStrHash<TInt>& NodeNameH, const double Thres);
+  void DumpMemberships_all(const TStr& OutFNm,const TStr& InFNm,TStrHash<TInt>& NodeNameH, const double Thres);
   void DumpMemberships(const TStr& OutFNm) { DumpMemberships(OutFNm, sqrt(PNoCom)); }
   void GetCommunity(TIntV& CmtyVIn, TIntV& CmtyVOut, const int CID) { GetCommunity(CmtyVIn, CmtyVOut, CID, sqrt(PNoCom)); }
   void GetCommunity(TIntV& CmtyVIn, TIntV& CmtyVOut, const int CID, const double Thres);
