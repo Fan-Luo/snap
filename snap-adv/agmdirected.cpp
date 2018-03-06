@@ -185,7 +185,7 @@ void TCoda::SetCmtyVV(const TVec<TIntV>& CmtyVVOut, const TVec<TIntV>& CmtyVVIn)
     for (int u = 0; u < CmtyVVOut[c].Len(); u++) {
       int UID = CmtyVVOut[c][u];
       if (! NodesOk) { UID = NIDIdxH.GetDat(UID); }
-      if (G->IsNode(UID)) { 
+      if (G->IsNode(UID)) {
         AddComOut(UID, c, 1.0);
       }
     }
@@ -194,7 +194,7 @@ void TCoda::SetCmtyVV(const TVec<TIntV>& CmtyVVOut, const TVec<TIntV>& CmtyVVIn)
     for (int u = 0; u < CmtyVVIn[c].Len(); u++) {
       int UID = CmtyVVIn[c][u];
       if (! NodesOk) { UID = NIDIdxH.GetDat(UID); }
-      if (G->IsNode(UID)) { 
+      if (G->IsNode(UID)) {
         AddComIn(UID, c, 1.0);
       }
     }
@@ -203,36 +203,36 @@ void TCoda::SetCmtyVV(const TVec<TIntV>& CmtyVVOut, const TVec<TIntV>& CmtyVVIn)
 
 void TCoda::SetGraph(const PNGraph& GraphPt) {
   G = GraphPt;
-  HOVIDSV.Gen(G->GetNodes());  
+  HOVIDSV.Gen(G->GetNodes());
   NodesOk = true;
   GraphPt->GetNIdV(NIDV);
   // check that nodes IDs are {0,1,..,Nodes-1}
   for (int nid = 0; nid < GraphPt->GetNodes(); nid++) {
-    if (! GraphPt->IsNode(nid)) { 
-      NodesOk = false; 
-      break; 
-    } 
+    if (! GraphPt->IsNode(nid)) {
+      NodesOk = false;
+      break;
+    }
   }
   if (! NodesOk) {
     printf("rearrage nodes\n");
     G = TSnap::GetSubGraph(GraphPt, NIDV, true);
     for (int nid = 0; nid < G->GetNodes(); nid++) {
-      IAssert(G->IsNode(nid)); 
+      IAssert(G->IsNode(nid));
     }
   }
   TSnap::DelSelfEdges(G);
-  
+
   PNoCom = 1.0 / (double) G->GetNodes();
   DoParallel = false;
   if (1.0 / PNoCom > sqrt(TFlt::Mx)) { PNoCom = 0.99 / sqrt(TFlt::Mx); } // to prevent overflow
   NegWgt = 1.0;
 }
 
-double TCoda::Likelihood(const bool _DoParallel) { 
+double TCoda::Likelihood(const bool _DoParallel) {
   TExeTm ExeTm;
   double L = 0.0;
   if (_DoParallel) {
-  #pragma omp parallel for 
+  #pragma omp parallel for
     for (int u = 0; u < F.Len(); u++) {
       double LU = LikelihoodForNode(true, u);
       #pragma omp atomic
@@ -305,7 +305,7 @@ double TCoda::LikelihoodForRow(const int UID, const TIntFltH& FU) {
   TFltV HOSumHV; //adjust for Hv of v hold out
   if (HOVIDSV[UID].Len() > 0) {
     HOSumHV.Gen(SumFV.Len());
-    
+
     for (int e = 0; e < HOVIDSV[UID].Len(); e++) {
       for (int c = 0; c < SumHV.Len(); c++) {
         HOSumHV[c] += GetComIn(HOVIDSV[UID][e], c);
@@ -386,7 +386,7 @@ void TCoda::GradientForNode(const bool IsRow, const int UID, TIntFltH& GradU, co
       }
     }
   }
-    
+
   TNGraph::TNodeI NI = G->GetNI(UID);
   int Deg = IsRow ? NI.GetOutDeg(): NI.GetInDeg();
   TFltV PredV(Deg), GradV(CIDSet.Len());
@@ -397,7 +397,7 @@ void TCoda::GradientForNode(const bool IsRow, const int UID, TIntFltH& GradU, co
     if (HOVIDSV[UID].IsKey(VID)) { continue; }
     PredV[e] = IsRow? Prediction(UID, VID): Prediction(VID, UID);
   }
-  
+
   for (int c = 0; c < CIDSet.Len(); c++) {
     int CID = CIDSet.GetKey(c);
     double Val = 0.0;
@@ -415,12 +415,12 @@ void TCoda::GradientForNode(const bool IsRow, const int UID, TIntFltH& GradU, co
   //add regularization
   if (RegCoef > 0.0) { //L1
     for (int c = 0; c < GradV.Len(); c++) {
-      GradV[c] -= RegCoef; 
+      GradV[c] -= RegCoef;
     }
   }
   if (RegCoef < 0.0) { //L2
     for (int c = 0; c < GradV.Len(); c++) {
-      GradV[c] += 2 * RegCoef * GetCom(IsRow, UID, CIDV[c]); 
+      GradV[c] += 2 * RegCoef * GetCom(IsRow, UID, CIDV[c]);
     }
   }
   for (int c = 0; c < GradV.Len(); c++) {
@@ -442,14 +442,14 @@ void TCoda::GradientForRow(const int UID, TIntFltH& GradU, const TIntSet& CIDSet
   TFltV HOSumHV; //adjust for Hv of v hold out
   if (HOVIDSV[UID].Len() > 0) {
     HOSumHV.Gen(SumHV.Len());
-    
+
     for (int e = 0; e < HOVIDSV[UID].Len(); e++) {
       for (int c = 0; c < SumHV.Len(); c++) {
         HOSumHV[c] += GetComIn(HOVIDSV[UID][e], c);
       }
     }
   }
-    
+
   TNGraph::TNodeI NI = G->GetNI(UID);
   int Deg = NI.GetOutDeg();
   TFltV PredV(Deg), GradV(CIDSet.Len());
@@ -459,7 +459,7 @@ void TCoda::GradientForRow(const int UID, TIntFltH& GradU, const TIntSet& CIDSet
     if (HOVIDSV[UID].IsKey(NI.GetOutNId(e))) { continue; }
     PredV[e] = Prediction(UID, NI.GetOutNId(e));
   }
-  
+
   for (int c = 0; c < CIDSet.Len(); c++) {
     int CID = CIDSet.GetKey(c);
     double Val = 0.0;
@@ -477,12 +477,12 @@ void TCoda::GradientForRow(const int UID, TIntFltH& GradU, const TIntSet& CIDSet
   //add regularization
   if (RegCoef > 0.0) { //L1
     for (int c = 0; c < GradV.Len(); c++) {
-      GradV[c] -= RegCoef; 
+      GradV[c] -= RegCoef;
     }
   }
   if (RegCoef < 0.0) { //L2
     for (int c = 0; c < GradV.Len(); c++) {
-      GradV[c] += 2 * RegCoef * GetComOut(UID, CIDV[c]); 
+      GradV[c] += 2 * RegCoef * GetComOut(UID, CIDV[c]);
     }
   }
   for (int c = 0; c < GradV.Len(); c++) {
@@ -627,12 +627,12 @@ void TCoda::DumpMemberships(const TStr& OutFNm, const TStrHash<TInt>& NodeNameH,
     TIntFltH NIDOutFH, NIDInFH, NIDInOutFH;
     GetNIDValH(NIDInOutFH, NIDOutFH, NIDInFH, CID, Thres);
     if (NIDOutFH.Len() == 0 || NIDInFH.Len() == 0) { continue; }
-    
+
     /*
     if (GetSumVal(true, CID) < Thres && GetSumVal(false, CID) < Thres) { continue; }
     for (int u = 0; u < NIDV.Len(); u++) {
-      if (GetCom(true, u, CID) >= Thres && GetCom(false, u, CID) >= Thres) { 
-        NIDInOutFH.AddDat(u, GetCom(true, u, CID) + GetCom(false, u, CID)); 
+      if (GetCom(true, u, CID) >= Thres && GetCom(false, u, CID) >= Thres) {
+        NIDInOutFH.AddDat(u, GetCom(true, u, CID) + GetCom(false, u, CID));
       } else if (GetCom(true, u, CID) >= Thres) {
         NIDOutFH.AddDat(u, GetCom(true, u, CID));
       } else if (GetCom(false, u, CID) >= Thres) {
@@ -671,10 +671,12 @@ void TCoda::DumpMemberships(const TStr& OutFNm, const double Thres) {
   DumpMemberships(OutFNm, NodeNameH, Thres);
 }
 
-//fan: Dump Memberships, each row is a community, each column is a node's membership to corresponding community
-void TCoda::DumpMemberships_all(const TStr& OutFNm,TStrHash<TInt>& NodeNameH, const double Thres) {
 
-    FILE* FId = fopen(OutFNm.CStr(), "wt");
+//fan
+void TCoda::DumpMemberships_all(const TStr& OutFNm,const TStr& InFNm,TStrHash<TInt>& NodeNameH, const double Thres) {
+
+    FILE* FId_out = fopen(OutFNm.CStr(), "wt");
+    FILE* FId_in = fopen(InFNm.CStr(), "wt");
     TIntFltH CIDSumFH(NumComs);
 
     for (int c = 0; c < NumComs; c++) {
@@ -684,19 +686,25 @@ void TCoda::DumpMemberships_all(const TStr& OutFNm,TStrHash<TInt>& NodeNameH, co
 
     for (int u = 0; u < NIDV.Len(); u++){
         int NIdx = NIDV[u];
-        fprintf(FId, "%s\t", NodeNameH.GetKey(NIdx));
+        fprintf(FId_out, "%s\t", NodeNameH.GetKey(NIdx));
+        fprintf(FId_in, "%s\t", NodeNameH.GetKey(NIdx));
     }
-    fprintf(FId, "\n");
+    fprintf(FId_out, "\n");
+    fprintf(FId_in, "\n");
 
     for (int c = 0; c < NumComs; c++) {
         int CID = CIDSumFH.GetKey(c);
-	for (int u = 0; u < NIDV.Len(); u++){
-		fprintf(FId, "%f\t", GetCom(false, u, CID));
+		for (int u = 0; u < NIDV.Len(); u++){
+			fprintf(FId_out, "%f\t", GetCom(true, u, CID));
+			fprintf(FId_in, "%f\t", GetCom(false, u, CID));
+		}
+		fprintf(FId_out, "\n");
+		fprintf(FId_in, "\n");
 	}
-	fprintf(FId, "\n");
-    }
-    fclose(FId);
+	fclose(FId_out);
+	fclose(FId_in);
 }
+
 
 void TCoda::GetCmtyS(TIntSet& CmtySOut, TIntSet& CmtySIn, const int CID, const double Thres) {
   CmtySOut.Gen(G->GetNodes() / 10);
@@ -810,7 +818,7 @@ int TCoda::FindComsByCV(TIntV& ComsV, const double HOFrac, const int NumThreads,
       }
       */
     }
-    
+
     printf("hold out set generated\n");
   }
 
@@ -865,12 +873,12 @@ int TCoda::FindComsByCV(TIntV& ComsV, const double HOFrac, const int NumThreads,
   return EstComs;
 }
 
-double TCoda::LikelihoodHoldOut(const bool DoParallel) { 
+double TCoda::LikelihoodHoldOut(const bool DoParallel) {
   double L = 0.0;
   for (int u = 0; u < HOVIDSV.Len(); u++) {
     for (int e = 0; e < HOVIDSV[u].Len(); e++) {
       int VID = HOVIDSV[u][e];
-      if (VID == u) { continue; } 
+      if (VID == u) { continue; }
       double Pred = Prediction(u, VID);
       if (G->IsEdge(u, VID)) {
         L += log(1.0 - Pred);
@@ -901,7 +909,7 @@ double TCoda::GetStepSizeByLineSearch(const bool IsRow, const int UID, const TIn
     } else {
       break;
     }
-    if (iter == MaxIter - 1) { 
+    if (iter == MaxIter - 1) {
       StepSize = 0.0;
       break;
     }
@@ -976,7 +984,7 @@ int TCoda::MLEGradAscent(const double& Thres, const int& MaxIter, const TStr Plo
       if (CurL - PrevL <= Thres * fabs(PrevL)) { break; }
       else { PrevL = CurL; }
     }
-    
+
   }
   printf("\n");
   printf("MLE for Lambda completed with %d iterations(%s)\n", iter, ExeTm.GetTmStr());
@@ -1004,7 +1012,7 @@ int TCoda::MLEGradAscentParallel(const double& Thres, const int& MaxIter, const 
   TBoolV IsRowV(ChunkNum * ChunkSize);
   for (iter = 0; iter < MaxIter; iter++) {
     NIdxV.Clr(false);
-    for (int i = 0; i < F.Len(); i++) { 
+    for (int i = 0; i < F.Len(); i++) {
       //if (NIDOPTV[i] == 0) {  NIdxV.Add(i); }
       NIdxV.Add(i);
     }
@@ -1032,7 +1040,7 @@ int TCoda::MLEGradAscentParallel(const double& Thres, const int& MaxIter, const 
             CIDSet.AddKey(CI.GetKey());
           }
         }
-        if (CIDSet.Empty()) { 
+        if (CIDSet.Empty()) {
           CurFU.Clr();
         }
         else {
@@ -1127,7 +1135,7 @@ int TCoda::MLEGradAscentParallel(const double& Thres, const int& MaxIter, const 
       IterLV.Add(TIntFltPr(iter * ChunkSize * ChunkNum, CurL));
       printf("\r%d iterations, Likelihood: %f, Diff: %f [%lu secs]", iter, CurL,  CurL - PrevL, time(NULL) - InitTime);
        fflush(stdout);
-      if (CurL - PrevL <= Thres * fabs(PrevL)) { 
+      if (CurL - PrevL <= Thres * fabs(PrevL)) {
         break;
       }
       else {
